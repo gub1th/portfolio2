@@ -1,7 +1,9 @@
 import * as THREE from 'three';
 import './style.css';
+import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import { FontLoader } from 'three/examples/jsm/loaders/FontLoader';
 import { checkIntersection} from './helpers'
 
 //popup handling
@@ -69,7 +71,7 @@ const frame = new THREE.Mesh(frameGeometry, frameMaterials);
 scene.add(frame);
 
 // Create the floor
-const floorGeometry = new THREE.PlaneGeometry(150, 150, 30, 30);
+const floorGeometry = new THREE.PlaneGeometry(300, 300, 60, 60);
 floorGeometry.rotateX(-Math.PI * 0.5);
 let vertData = [];
 let v3 = new THREE.Vector3(); // for re-use
@@ -86,6 +88,7 @@ let oceanMaterial = new THREE.MeshLambertMaterial({
   color: "aqua"
 });
 let ocean = new THREE.Mesh(floorGeometry, oceanMaterial);
+ocean.position.set(0, 0, -150);
 scene.add(ocean);
 
 //Island 1: About Me
@@ -105,6 +108,26 @@ island1InfoMesh.position.set(0, 0, -30);
 
 scene.add(island1InfoMesh);
 
+const fontLoader = new FontLoader();
+
+fontLoader.load( 'node_modules/three/examples/fonts/droid/droid_serif_regular.typeface.json', function ( font ) {
+
+	const textGeometry = new TextGeometry( 'Hello three.js!', {
+		font: font,
+		size: 5,
+		height: 5,
+		// curveSegments: 12,
+		// bevelEnabled: true,
+		// bevelThickness: 10,
+		// bevelSize: 8,
+		// bevelOffset: 0,
+		// bevelSegments: 5
+	} );
+  const textMaterial = new THREE.MeshNormalMaterial();
+  const textMesh = new THREE.Mesh(textGeometry, textMaterial);
+  scene.add(textMesh);
+} );
+
 // Light
 let light = new THREE.DirectionalLight(0xffffff, 1);
 light.position.setScalar(1);
@@ -115,8 +138,8 @@ scene.add(light, new THREE.AmbientLight(0xffffff, 0.25));
 //scene.add(lightHelper, gridHelper);
 
 // Camera
-const camera = new THREE.PerspectiveCamera(45, sizes.width / sizes.height, 0.1, 100);
-camera.position.set(0, 20, 40);
+const camera = new THREE.PerspectiveCamera(45, sizes.width / sizes.height, 0.1, 1000);
+camera.position.set(0, 12 , 30);
 scene.add(camera);
 
 // Renderer
@@ -184,6 +207,8 @@ window.addEventListener('resize', () => {
 
 let clock = new THREE.Clock();
 
+const coordinatesElement = document.getElementById('coordinates');
+
 const animate = () => {
   window.requestAnimationFrame(animate);
 
@@ -213,7 +238,7 @@ const animate = () => {
     boatScene.position.add(boatDirection);
 
     // Calculate the new camera position relative to the boat
-    const offset = new THREE.Vector3(0, 20, 40); // Set your desired offset
+    const offset = new THREE.Vector3(0, 12, 30); // Set your desired offset
     const boatPosition = boatScene.position.clone();
 
     // Calculate the camera position
@@ -232,6 +257,9 @@ const animate = () => {
       island1InfoMesh.material.color.setHex(0x008000);
       popup1.style.display = "none";
     }
+
+    //display coordinates
+  coordinatesElement.textContent = `X:${boatPosition.x.toFixed(2)}\nY:${boatPosition.y.toFixed(2)}\nZ:${boatPosition.z.toFixed(2)}`
   }
 
   controls.update();
